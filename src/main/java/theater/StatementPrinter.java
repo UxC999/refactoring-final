@@ -51,13 +51,7 @@ public class StatementPrinter {
             final int thisAmount = getAmount(performance);
 
             // add volume credits
-            volumeCredits += Math.max(
-                    performance.getAudience() - Constants.BASE_VOLUME_CREDIT_THRESHOLD, 0);
-
-            if ("comedy".equals(getPlay(performance).getType())) {
-                volumeCredits += performance.getAudience()
-                        / Constants.COMEDY_EXTRA_VOLUME_FACTOR;
-            }
+            volumeCredits += getVolumeCredits(performance);
 
             result.append(String.format(
                     "  %s: %s (%s seats)%n",
@@ -94,8 +88,8 @@ public class StatementPrinter {
      * Computes the amount owed for a single performance.
      *
      * @param performance the performance
-     * @return the amount owed in cents
-     * @throws RuntimeException if the play type is unknown
+     * @return the amount in cents
+     * @throws RuntimeException if a play type is unknown
      */
     private int getAmount(Performance performance) {
         int result;
@@ -128,4 +122,22 @@ public class StatementPrinter {
 
         return result;
     }
+
+    /**
+     * Computes the volume credits for a single performance.
+     *
+     * @param performance the performance
+     * @return the number of volume credits for this performance
+     */
+    private int getVolumeCredits(Performance performance) {
+        int result = Math.max(
+                performance.getAudience() - Constants.BASE_VOLUME_CREDIT_THRESHOLD, 0);
+
+        if ("comedy".equals(getPlay(performance).getType())) {
+            result += performance.getAudience() / Constants.COMEDY_EXTRA_VOLUME_FACTOR;
+        }
+
+        return result;
+    }
 }
+
