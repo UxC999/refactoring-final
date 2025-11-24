@@ -43,24 +43,21 @@ public class StatementPrinter {
         final StringBuilder result =
                 new StringBuilder("Statement for " + invoice.getCustomer() + System.lineSeparator());
 
-        int totalAmount = 0;
-        int volumeCredits = 0;
-
+        // ---- Loop 1: build each performance line ----
         for (Performance performance : invoice.getPerformances()) {
-            final int thisAmount = getAmount(performance);
-
-            // add volume credits
-            volumeCredits += getVolumeCredits(performance);
-
             result.append(String.format(
                     "  %s: %s (%s seats)%n",
                     getPlay(performance).getName(),
-                    usd(thisAmount),
+                    usd(getAmount(performance)),
                     performance.getAudience()
             ));
-
-            totalAmount += thisAmount;
         }
+
+        // ---- Loop 2: compute total amount ----
+        final int totalAmount = getTotalAmount();
+
+        // ---- Loop 3: compute total volume credits ----
+        final int volumeCredits = getTotalVolumeCredits();
 
         result.append(String.format("Amount owed is %s%n", usd(totalAmount)));
         result.append(String.format("You earned %s credits%n", volumeCredits));
@@ -141,5 +138,31 @@ public class StatementPrinter {
     private String usd(int amount) {
         return NumberFormat.getCurrencyInstance(Locale.US)
                 .format((double) amount / Constants.CENTS_PER_DOLLAR);
+    }
+
+    /**
+     * Computes the total volume credits for all performances.
+     *
+     * @return total volume credits
+     */
+    private int getTotalVolumeCredits() {
+        int result = 0;
+        for (Performance performance : invoice.getPerformances()) {
+            result += getVolumeCredits(performance);
+        }
+        return result;
+    }
+
+    /**
+     * Computes the total amount for all performances.
+     *
+     * @return total amount in cents
+     */
+    private int getTotalAmount() {
+        int result = 0;
+        for (Performance performance : invoice.getPerformances()) {
+            result += getAmount(performance);
+        }
+        return result;
     }
 }
